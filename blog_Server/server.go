@@ -184,3 +184,21 @@ func (s *server) UpdateBlog(ctx context.Context, in *blogpb.UpdateBlogRequest) (
 	}, nil
 
 }
+func (s *server) DeleteBlog(ctx context.Context, in *blogpb.DeleteBlogRequest) (*blogpb.DeleteBlogResponse, error) {
+	fmt.Println("Delete blog request")
+
+	blogId := in.GetBlogId()
+	oid, err := primitive.ObjectIDFromHex(blogId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Cannot parse ID")
+	}
+	res, err := collection.DeleteOne(context.Background(), primitive.M{"_id": oid})
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "Cannot delete object in MongoDB: %v", err)
+
+	}
+	fmt.Println("Delete result: ", res)
+	return &blogpb.DeleteBlogResponse{
+		BlogId: blogId}, nil
+}
