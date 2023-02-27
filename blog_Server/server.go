@@ -116,3 +116,31 @@ func (s *server) CreateBlog(ctx context.Context, req *blogpb.CreateBlogRequest) 
 		},
 	}, nil
 }
+
+func (s *server) ReadBlog(ctx context.Context, req *blogpb.ReadBlogRequest) (*blogpb.ReadBlogResponse, error) {
+	fmt.Println("Read blog request")
+
+	blogId := req.GetBlogId()
+	oid, err := primitive.ObjectIDFromHex(blogId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Cannot parse ID")
+	}
+	data := blogItem{}
+
+	res := collection.FindOne(context.Background(), primitive.M{"_id": oid})
+
+	if err := res.Decode(&data); err != nil {
+		return nil, status.Errorf(codes.NotFound, "Cannot find blog with specified ID")
+	}
+
+	fmt.Println(res)
+	return &blogpb.ReadBlogResponse{
+		Blog: &blogpb.Blog{
+
+			Id:       string(data.ID.Hex()),
+			Title:    data.Title,
+			Content:  data.Content,
+			AuthorId: data.AuthorId,
+		},
+	}, nil
+}
