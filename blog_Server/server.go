@@ -133,7 +133,7 @@ func (s *server) ReadBlog(ctx context.Context, req *blogpb.ReadBlogRequest) (*bl
 		return nil, status.Errorf(codes.NotFound, "Cannot find blog with specified ID")
 	}
 
-	fmt.Println(res)
+	// fmt.Println(res)
 	return &blogpb.ReadBlogResponse{
 		Blog: &blogpb.Blog{
 
