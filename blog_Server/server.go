@@ -144,3 +144,43 @@ func (s *server) ReadBlog(ctx context.Context, req *blogpb.ReadBlogRequest) (*bl
 		},
 	}, nil
 }
+
+func (s *server) UpdateBlog(ctx context.Context, in *blogpb.UpdateBlogRequest) (*blogpb.UpdateBlogResponse, error) {
+	fmt.Println("Update blog request")
+
+	blog := in.GetBlog()
+
+	oid, err := primitive.ObjectIDFromHex(blog.GetId())
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Cannot parse ID")
+	}
+
+	// create emply struct
+	data := &blogItem{}
+	res := collection.FindOne(context.Background(), primitive.M{"_id": oid})
+	if err := res.Decode(data); err != nil {
+		return nil, status.Errorf(codes.NotFound, "Cannot find blog with specified ID")
+	}
+
+	data.Title = blog.GetTitle()
+	data.Content = blog.GetContent()
+	data.AuthorId = blog.GetAuthorId()
+
+	updateRes, updateErr := collection.ReplaceOne(context.Background(), primitive.M{"_id": oid}, data)
+	if updateErr != nil {
+		return nil, status.Errorf(codes.Internal, "Cannot update object in MongoDB: %v", updateErr)
+
+	}
+
+	fmt.Println("Update result: ", updateRes)
+
+	return &blogpb.UpdateBlogResponse{
+		Blog: &blogpb.Blog{
+			Id:       string(data.ID.Hex()),
+			Title:    data.Title,
+			Content:  data.Content,
+			AuthorId: data.AuthorId,
+		},
+	}, nil
+
+}

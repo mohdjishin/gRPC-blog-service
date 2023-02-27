@@ -25,11 +25,35 @@ func main() {
 	// 	Title:    "My first blog",
 	// 	Content:  "Content of the first blog",
 	// }
+
+	upBlog := &blogpb.Blog{
+
+		Id:       "63fc4b7c2ea1c2ea73c92807",
+		Title:    "My first blog (edited v1)",
+		Content:  "Content of the first blog, with some awesome additions!",
+		AuthorId: "Mohd Jishin Jamal",
+	}
+
 	// doCreateBlog(c, blog)
 	// doReadBlog(c, "63fc4b7c2ea1c2ea73c92807")
+	doUpateBlog(c, upBlog)
 
 }
 
+func doUpateBlog(c blogpb.BlogServiceClient, blog *blogpb.Blog) {
+
+	res, err := c.UpdateBlog(context.Background(), &blogpb.UpdateBlogRequest{
+		Blog: blog,
+	},
+	)
+
+	if err != nil {
+		log.Fatalf("Unexpected error: %v", err)
+	}
+
+	fmt.Printf("Blog has been updated %v", res)
+
+}
 func doCreateBlog(c blogpb.BlogServiceClient, blog *blogpb.Blog) {
 
 	fmt.Println("Creating the blog")
