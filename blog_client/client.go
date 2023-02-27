@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/mohdjishin/gRPC-blog-service/blogpb"
@@ -21,9 +22,9 @@ func main() {
 	c := blogpb.NewBlogServiceClient(conn)
 
 	// blog := &blogpb.Blog{
-	// 	AuthorId: "Jishin",
-	// 	Title:    "My first blog",
-	// 	Content:  "Content of the first blog",
+	// 	AuthorId: "Nibras",
+	// 	Title:    "My first blog is here",
+	// 	Content:  "Content of the first blog is here",
 	// }
 
 	// upBlog := &blogpb.Blog{
@@ -38,7 +39,31 @@ func main() {
 	// doReadBlog(c, "63fc4b7c2ea1c2ea73c92807")
 	// doUpateBlog(c, upBlog)
 
-	doDeleteBlog(c, "63fc4e94adfe3ae273047a94")
+	// doDeleteBlog(c, "63fc4e94adfe3ae273047a94")
+	doListBlog(c)
+}
+
+func doListBlog(c blogpb.BlogServiceClient) {
+
+	stream, err := c.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
+
+	if err != nil {
+		log.Fatalf("Error while calling ListBlog RPC: %v", err)
+
+	}
+
+	for {
+		res, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			log.Fatalf("Error while reading stream: %v", err)
+		}
+		fmt.Println(res.GetBlog())
+	}
+
 }
 
 func doDeleteBlog(c blogpb.BlogServiceClient, id string) {
